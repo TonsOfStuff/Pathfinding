@@ -56,7 +56,6 @@ class Tile:
 
     def updateNeighbors(self, grid):
         self.neighbors = []
-        # Down, Up, Right, Left — skip barriers
         if self.row < self.totalRows - 1 and not grid[self.row + 1][self.col].isBarrier():
             self.neighbors.append(grid[self.row + 1][self.col])
         if self.row > 0 and not grid[self.row - 1][self.col].isBarrier():

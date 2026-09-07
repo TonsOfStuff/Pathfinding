@@ -1,5 +1,5 @@
 from turtle import width
-
+from algs import *
 import pygame;
 import sys, time;
 from tile import Tile;
@@ -54,8 +54,14 @@ def updateAllAnimations(grid):
         for tile in row:
             tile.updateAnimation()
 
+def updateNeighborsForAll(grid):
+    for row in grid:
+        for tile in row:
+            tile.updateNeighbors(grid)
+
 #Game loop
 grid = makeGrid(ROWS, WIDTH)
+updateNeighborsForAll(grid)
 running = True
 while running:
     #Event getting in pygame
@@ -75,6 +81,10 @@ while running:
             tile.startBarrierGrowth(RED)
         elif tile != start and tile != end and not tile.isBarrier():
             tile.startBarrierGrowth()
+            grid[row - 1][col].updateNeighbors(grid)
+            grid[row + 1][col].updateNeighbors(grid)
+            grid[row][col - 1].updateNeighbors(grid)
+            grid[row][col + 1].updateNeighbors(grid)
 
     elif pygame.mouse.get_pressed()[2]:
         pos = pygame.mouse.get_pos()
@@ -85,12 +95,24 @@ while running:
             start = None
         elif tile == end:
             end = None
+        grid[row - 1][col].updateNeighbors(grid)
+        grid[row + 1][col].updateNeighbors(grid)
+        grid[row][col - 1].updateNeighbors(grid)
+        grid[row][col + 1].updateNeighbors(grid)
+
+    elif pygame.key.get_pressed()[pygame.K_SPACE]:
+        if start and end:
+            visited = dfs(start, end)
+            for tile in visited:
+                if tile != start and tile != end:
+                    tile.startBarrierGrowth(BLUE)
+
             
 
     #Draw grids out
     updateAllAnimations(grid)
     draw(win, grid, ROWS, WIDTH)
-
+    
     pygame.display.flip()
 
 
