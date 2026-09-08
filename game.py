@@ -3,7 +3,7 @@ from algs import *
 import pygame;
 import sys, time;
 from tile import Tile;
-from colors import WHITE, BLACK, GREY, GREEN, RED, BLUE;
+from colors import WHITE, BLACK, GREY, GREEN, RED, BLUE, YELLOW;
 
 WIDTH = 600
 ROWS = 25
@@ -59,9 +59,30 @@ def updateNeighborsForAll(grid):
         for tile in row:
             tile.updateNeighbors(grid)
 
+def reconstructPath(path, start, end):
+    if not path:
+        return None
+    if end != start and end not in path:
+        return None
+    node = end
+    result = [node]
+    while node != start:
+        node = path[node]
+        result.append(node)
+    result.reverse()
+    return result
+
 #Game loop
 grid = makeGrid(ROWS, WIDTH)
 updateNeighborsForAll(grid)
+
+#Route stuff
+visited = []
+visitCount = 0
+finalRoute = []
+finalRouteCount = 0
+
+
 running = True
 while running:
     #Event getting in pygame
@@ -70,44 +91,60 @@ while running:
             running = False
 
     if pygame.mouse.get_pressed()[0]:
-        pos = pygame.mouse.get_pos()
-        row, col = getClickedPos(pos, ROWS, WIDTH)
-        tile = grid[row][col]
-        if not start and tile != end:
-            start = tile
-            tile.startBarrierGrowth(GREEN)
-        elif not end and tile != start:
-            end = tile
-            tile.startBarrierGrowth(RED)
-        elif tile != start and tile != end and not tile.isBarrier():
-            tile.startBarrierGrowth()
+        try:
+            pos = pygame.mouse.get_pos()
+            row, col = getClickedPos(pos, ROWS, WIDTH)
+            tile = grid[row][col]
+            if not start and tile != end:
+                start = tile
+                tile.startBarrierGrowth(GREEN)
+            elif not end and tile != start:
+                end = tile
+                tile.startBarrierGrowth(RED)
+            elif tile != start and tile != end and not tile.isBarrier():
+                tile.startBarrierGrowth()
+                grid[row - 1][col].updateNeighbors(grid)
+                grid[row + 1][col].updateNeighbors(grid)
+                grid[row][col - 1].updateNeighbors(grid)
+                grid[row][col + 1].updateNeighbors(grid)
+        except IndexError:
+            pass
+
+    elif pygame.mouse.get_pressed()[2]:
+        try:
+            pos = pygame.mouse.get_pos()
+            row, col = getClickedPos(pos, ROWS, WIDTH)
+            tile = grid[row][col]
+            tile.reset()
+            if tile == start:
+                start = None
+            elif tile == end:
+                end = None
             grid[row - 1][col].updateNeighbors(grid)
             grid[row + 1][col].updateNeighbors(grid)
             grid[row][col - 1].updateNeighbors(grid)
             grid[row][col + 1].updateNeighbors(grid)
-
-    elif pygame.mouse.get_pressed()[2]:
-        pos = pygame.mouse.get_pos()
-        row, col = getClickedPos(pos, ROWS, WIDTH)
-        tile = grid[row][col]
-        tile.reset()
-        if tile == start:
-            start = None
-        elif tile == end:
-            end = None
-        grid[row - 1][col].updateNeighbors(grid)
-        grid[row + 1][col].updateNeighbors(grid)
-        grid[row][col - 1].updateNeighbors(grid)
-        grid[row][col + 1].updateNeighbors(grid)
+        except IndexError:
+            pass
 
     elif pygame.key.get_pressed()[pygame.K_SPACE]:
         if start and end:
-            visited = dfs(start, end)
-            for tile in visited:
-                if tile != start and tile != end:
-                    tile.startBarrierGrowth(BLUE)
+            path, visited = bfs(start, end)
+            visitCount = 0
 
-            
+            finalRoute = reconstructPath(path, start, end)
+            finalRouteCount = 0
+
+    if (visited and visitCount < len(visited)):
+        tile = visited[visitCount]
+        if tile != start and tile != end:
+            tile.startBarrierGrowth(BLUE)
+        visitCount += 1
+    elif (finalRoute and visitCount >= len(visited) and finalRouteCount < len(finalRoute)):
+        tile = finalRoute[finalRouteCount]
+        if tile != start and tile != end:
+            tile.startBarrierGrowth(YELLOW)
+        finalRouteCount += 1
 
     #Draw grids out
     updateAllAnimations(grid)
