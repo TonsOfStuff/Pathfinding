@@ -72,6 +72,15 @@ def reconstructPath(path, start, end):
     result.reverse()
     return result
 
+def clearBoard(grid, barriers = True):
+    for row in grid:
+        for tile in row:
+            if (barriers == False):
+                if (tile.isBarrier() == False and tile != start and tile != end):
+                    tile.reset()
+            else:
+                tile.reset()
+
 #Game loop
 grid = makeGrid(ROWS, WIDTH)
 updateNeighborsForAll(grid)
@@ -128,6 +137,7 @@ while running:
             pass
 
     elif pygame.key.get_pressed()[pygame.K_SPACE]:
+        clearBoard(grid, False)
         if start and end:
             path, visited = bfs(start, end)
             visitCount = 0
