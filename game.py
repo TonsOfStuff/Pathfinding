@@ -112,10 +112,10 @@ while running:
                 tile.startBarrierGrowth(RED)
             elif tile != start and tile != end and not tile.isBarrier():
                 tile.startBarrierGrowth()
-                grid[row - 1][col].updateNeighbors(grid)
-                grid[row + 1][col].updateNeighbors(grid)
-                grid[row][col - 1].updateNeighbors(grid)
-                grid[row][col + 1].updateNeighbors(grid)
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    r, c = row + dr, col + dc
+                    if 0 <= r < ROWS and 0 <= c < ROWS:
+                        grid[r][c].updateNeighbors(grid)
         except IndexError:
             pass
 
@@ -129,10 +129,10 @@ while running:
                 start = None
             elif tile == end:
                 end = None
-            grid[row - 1][col].updateNeighbors(grid)
-            grid[row + 1][col].updateNeighbors(grid)
-            grid[row][col - 1].updateNeighbors(grid)
-            grid[row][col + 1].updateNeighbors(grid)
+            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                r, c = row + dr, col + dc
+                if 0 <= r < ROWS and 0 <= c < ROWS:
+                    grid[r][c].updateNeighbors(grid)
         except IndexError:
             pass
 
